@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const projects = [
   {
@@ -42,46 +42,11 @@ type Theme = "dark" | "light";
 export default function Home() {
   const [filter, setFilter] = useState<ProjectFilter>("all");
   const [theme, setTheme] = useState<Theme>("dark");
-  const [preferencesOpen, setPreferencesOpen] = useState(false);
-  const preferencesRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!preferencesOpen) {
-      return;
-    }
-
-    function handlePointerDown(event: PointerEvent) {
-      if (
-        event.target instanceof Node &&
-        !preferencesRef.current?.contains(event.target)
-      ) {
-        setPreferencesOpen(false);
-      }
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setPreferencesOpen(false);
-      }
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [preferencesOpen]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem("theme", theme);
   }, [theme]);
-
-  function chooseTheme(nextTheme: Theme) {
-    setTheme(nextTheme);
-  }
 
   const visibleProjects = projects.filter(
     (project) => filter === "all" || project.category === filter,
@@ -198,41 +163,17 @@ export default function Home() {
         <p>&copy; 2026 Hailey. Built with Next.js.</p>
       </footer>
 
-      <div className="preferences-toolbar" ref={preferencesRef}>
-        {preferencesOpen && (
-          <section
-            className="preferences-menu"
-            id="preferences-menu"
-            role="dialog"
-            aria-label="Preferences"
-          >
-            <h2>Preferences</h2>
-            <fieldset className="theme-options">
-              <legend>Appearance</legend>
-              <div className="theme-options-buttons">
-                {(["light", "dark"] as const).map((value) => (
-                  <button
-                    type="button"
-                    key={value}
-                    className={`theme-option${theme === value ? " active" : ""}`}
-                    aria-pressed={theme === value}
-                    onClick={() => chooseTheme(value)}
-                  >
-                    {value === "light" ? "Light" : "Dark"}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-          </section>
-        )}
+      <div className="theme-toggle-container">
         <button
           type="button"
-          className="preferences-trigger"
-          aria-label="Open preferences"
-          aria-haspopup="dialog"
-          aria-expanded={preferencesOpen}
-          aria-controls="preferences-menu"
-          onClick={() => setPreferencesOpen((open) => !open)}
+          className="theme-toggle-button"
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          aria-pressed={theme === "dark"}
+          onClick={() =>
+            setTheme((currentTheme) =>
+              currentTheme === "dark" ? "light" : "dark",
+            )
+          }
         >
           <Image
             src="/favicon.ico"
