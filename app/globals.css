@@ -288,6 +288,100 @@ main {
   text-decoration: underline;
 }
 
+.resume-box {
+  display: grid;
+  grid-template-columns: 1.8fr 0.8fr;
+  gap: 2rem;
+  align-items: start;
+  padding: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--bg-card);
+}
+
+.resume-copy {
+  color: var(--text-muted);
+}
+
+.resume-copy p {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.resume-experience {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.resume-entry {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+}
+
+.resume-entry-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.resume-entry h3 {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 1.15rem;
+}
+
+.resume-role {
+  margin: 0.2rem 0 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.resume-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.resume-bullets {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text-muted);
+}
+
+.resume-bullets li + li {
+  margin-top: 0.45rem;
+}
+
+.resume-tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.resume-tech-list span {
+  padding: 0.22rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.resume-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-top: 0.5rem;
+}
+
 .contact-box {
   max-width: 600px;
   padding: 2.5rem;
@@ -367,6 +461,24 @@ footer {
   .hero-cta {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .resume-box {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+
+  .resume-entry-header {
+    flex-direction: column;
+  }
+
+  .resume-meta {
+    align-items: flex-start;
+    white-space: normal;
+  }
+
+  .resume-actions {
+    align-items: stretch;
   }
 
   .contact-box {
