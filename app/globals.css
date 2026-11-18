@@ -288,98 +288,120 @@ main {
   text-decoration: underline;
 }
 
-.resume-box {
-  display: grid;
-  grid-template-columns: 1.8fr 0.8fr;
-  gap: 2rem;
-  align-items: start;
-  padding: 2rem;
+.resume-viewer {
+  max-width: 780px;
+  margin: 0 auto;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 8px;
   background-color: var(--bg-card);
 }
 
-.resume-copy {
-  color: var(--text-muted);
+.resume-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
 }
 
-.resume-copy p {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
+.resume-image-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
 }
 
-.resume-experience {
-  display: grid;
-  gap: 1.25rem;
+.resume-image-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
 }
 
-.resume-entry {
-  padding: 1.25rem;
+.resume-dialog {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  width: min(96vw, 1100px);
+  height: min(96vh, 1400px);
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg-secondary);
+  background: var(--bg-card);
+  color: var(--text-main);
 }
 
-.resume-entry-header {
+.resume-dialog::backdrop {
+  background: rgb(0 0 0 / 80%);
+  backdrop-filter: blur(4px);
+}
+
+.resume-dialog-toolbar {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1rem;
+  min-height: 2.5rem;
   margin-bottom: 0.75rem;
 }
 
-.resume-entry h3 {
-  margin: 0;
-  color: var(--text-main);
-  font-size: 1.15rem;
-}
-
-.resume-role {
-  margin: 0.2rem 0 0;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.resume-meta {
+.resume-zoom-controls {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.2rem;
-  color: var(--text-muted);
-  font-size: 0.8rem;
-  white-space: nowrap;
-}
-
-.resume-bullets {
-  margin: 0;
-  padding-left: 1.2rem;
-  color: var(--text-muted);
-}
-
-.resume-bullets li + li {
-  margin-top: 0.45rem;
-}
-
-.resume-tech-list {
-  display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
-  margin-top: 1rem;
+  color: var(--text-main);
+  font-size: 0.9rem;
 }
 
-.resume-tech-list span {
-  padding: 0.22rem 0.55rem;
+.resume-zoom-controls button,
+.resume-dialog-close {
+  padding: 0.4rem 0.8rem;
   border: 1px solid var(--border);
   border-radius: 4px;
-  background: var(--bg-card);
-  color: var(--text-muted);
-  font-size: 0.72rem;
+  background: var(--bg-secondary);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.resume-zoom-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resume-dialog-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  text-align: center;
+}
+
+.resume-dialog-image {
+  display: block;
+  width: auto;
+  max-width: none;
+  margin: 0 auto;
+}
+
+.resume-dialog-close {
+  flex-shrink: 0;
+}
+
+.resume-zoom-controls button:focus-visible,
+.resume-dialog-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .resume-actions {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
   gap: 0.9rem;
-  padding-top: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid var(--border);
 }
 
 .contact-box {
@@ -463,22 +485,20 @@ footer {
     align-items: flex-start;
   }
 
-  .resume-box {
-    grid-template-columns: 1fr;
-    padding: 1.5rem;
-  }
-
-  .resume-entry-header {
+  .resume-actions {
     flex-direction: column;
   }
 
-  .resume-meta {
-    align-items: flex-start;
-    white-space: normal;
+  .resume-dialog {
+    padding: 0.6rem;
   }
 
-  .resume-actions {
-    align-items: stretch;
+  .resume-dialog-toolbar {
+    align-items: flex-start;
+  }
+
+  .resume-zoom-controls {
+    flex-wrap: wrap;
   }
 
   .contact-box {

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const projects = [
   {
@@ -36,74 +36,37 @@ const projects = [
   },
 ] as const;
 
-const resumeExperience = [
-  {
-    company: "Capgemini",
-    location: "Atlanta, GA",
-    title: "Software Engineer Intern",
-    duration: "June 2026 – July 2026",
-    technologies: ["Python", "C++", "Azure", "MCP", "Node.js"],
-    bullets: [
-      "Expanded existing agentic AI frameworks for Coca-Cola bottlers by developing a Model Context Protocol (MCP) server on Azure with 80+ tools, enabling natural-language models to execute critical system tests every morning.",
-      "Researched Capgemini’s internally produced agentic AI framework versus open-source frameworks to identify recommendations and market gaps for the Enterprise Architect team.",
-      "Executed low-level C++ and Python software test cases using strict quality assurance practices to ensure algorithmic correctness and system reliability.",
-      "Implemented automated testing scripts and performance profiling tools to identify bottlenecks and maintain enterprise reliability under high-concurrency workloads.",
-    ],
-  },
-  {
-    company: "Gulfstream Aerospace",
-    location: "Savannah, GA",
-    title: "Avionics Engineer Intern",
-    duration: "January 2026 – May 2026",
-    technologies: ["MATLAB", "Jira", "V&V"],
-    bullets: [
-      "Improved efficiency of an Electrical Load calculation app by up to 50% by identifying software redundancies and data storage waste in a MATLAB app design workflow.",
-      "Investigated global field problem reports by reproducing avionics anomalies in a flight simulator environment to isolate root causes and validate system behavior.",
-      "Executed rigorous requirements verification and validation testing for integrated avionics systems to ensure compliance with aerospace performance standards.",
-    ],
-  },
-  {
-    company: "Create Labs",
-    location: "Athens, GA",
-    title: "Chief Engineer",
-    duration: "August 2024 – December 2025",
-    technologies: ["Product Development", "PCB Design", "Embedded Systems"],
-    bullets: [
-      "Led design-for-manufacturing and product development across multiple client projects while managing five-figure budgets and delivering scalable engineering solutions.",
-      "Coordinated a 28+ member multidisciplinary team, establishing standard operating procedures for lab operations, technical training, and client engagement.",
-      "Project-managed 7 employees to develop a biometric measurement device and designed modular mechanical housing for 9 industry-standard devices under tight constraints.",
-      "Provided hands-on engineering support in custom PCB design, data storage, onboard processing, app development, and embedded systems programming.",
-    ],
-  },
-  {
-    company: "Small Satellite Research Lab",
-    location: "Athens, GA",
-    title: "Electrical Engineer",
-    duration: "January 2025 – December 2025",
-    technologies: ["Power Systems", "PCB Rework", "MPPT"],
-    bullets: [
-      "Tested and assembled a solar power system on a 2U CubeSat, saving $13,000+ by soldering and desoldering damaged PCBs to salvage custom hardware.",
-      "Analyzed component performance data to maximize satellite power efficiency within mission constraints.",
-      "Designed MPPT circuit schematics and selected components for rugged temperatures, cutting the project timeline by 71% and improving battery life by approximately 30%.",
-    ],
-  },
-] as const;
-
 type ProjectFilter = "all" | "systems" | "web";
 type Theme = "dark" | "light";
 
 export default function Home() {
   const [filter, setFilter] = useState<ProjectFilter>("all");
   const [theme, setTheme] = useState<Theme>("dark");
+  const [isResumeEnlarged, setIsResumeEnlarged] = useState(false);
+  const [resumeZoom, setResumeZoom] = useState(1);
+  const resumeDialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem("theme", theme);
   }, [theme]);
 
+  useEffect(() => {
+    const dialog = resumeDialogRef.current;
+    if (isResumeEnlarged && dialog && !dialog.open) {
+      dialog.showModal();
+    } else if (!isResumeEnlarged && dialog?.open) {
+      dialog.close();
+    }
+  }, [isResumeEnlarged]);
+
   const visibleProjects = projects.filter(
     (project) => filter === "all" || project.category === filter,
   );
+
+  const changeResumeZoom = (amount: number) => {
+    setResumeZoom((zoom) => Math.min(3, Math.max(1, zoom + amount)));
+  };
 
   return (
     <>
@@ -201,45 +164,26 @@ export default function Home() {
           <div className="section-header">
             <h2 className="section-title">Resume</h2>
           </div>
-
-          <div className="resume-box">
-            <div className="resume-copy">
-              <p>
-                My experience blends software engineering, avionics, embedded
-                systems, and product development — with a focus on building
-                reliable, high-impact solutions.
-              </p>
-
-              <div className="resume-experience">
-                {resumeExperience.map((entry) => (
-                  <article className="resume-entry" key={entry.company}>
-                    <div className="resume-entry-header">
-                      <div>
-                        <h3>{entry.company}</h3>
-                        <p className="resume-role">{entry.title}</p>
-                      </div>
-                      <div className="resume-meta">
-                        <span>{entry.location}</span>
-                        <span>{entry.duration}</span>
-                      </div>
-                    </div>
-
-                    <ul className="resume-bullets">
-                      {entry.bullets.map((bullet) => (
-                        <li key={bullet}>{bullet}</li>
-                      ))}
-                    </ul>
-
-                    <div className="resume-tech-list">
-                      {entry.technologies.map((technology) => (
-                        <span key={technology}>{technology}</span>
-                      ))}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-
+          <div className="resume-viewer">
+            <button
+              type="button"
+              className="resume-image-button"
+              aria-label="Enlarge resume preview"
+              aria-haspopup="dialog"
+              onClick={() => {
+                setResumeZoom(1);
+                setIsResumeEnlarged(true);
+              }}
+            >
+              <Image
+                src="/resume-page-1.png"
+                alt="Hailey Heckmann 2026 Resume"
+                width={1224}
+                height={1584}
+                className="resume-image"
+                unoptimized
+              />
+            </button>
             <div className="resume-actions">
               <a
                 href="/Hailey-Heckmann-2026-Resume.pdf"
@@ -258,6 +202,75 @@ export default function Home() {
               </a>
             </div>
           </div>
+          <dialog
+            ref={resumeDialogRef}
+            className="resume-dialog"
+            aria-label="Enlarged resume preview"
+            onClose={() => setIsResumeEnlarged(false)}
+            onCancel={() => setIsResumeEnlarged(false)}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) {
+                setIsResumeEnlarged(false);
+              }
+            }}
+          >
+            <div className="resume-dialog-toolbar">
+              <div className="resume-zoom-controls" aria-label="Resume zoom controls">
+                <button
+                  type="button"
+                  aria-label="Zoom out"
+                  disabled={resumeZoom <= 1}
+                  onClick={() => changeResumeZoom(-0.25)}
+                >
+                  −
+                </button>
+                <span aria-live="polite">
+                  {Math.round(resumeZoom * 100)}%
+                </span>
+                <button
+                  type="button"
+                  aria-label="Zoom in"
+                  disabled={resumeZoom >= 3}
+                  onClick={() => changeResumeZoom(0.25)}
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResumeZoom(1)}
+                  disabled={resumeZoom === 1}
+                >
+                  Reset
+                </button>
+              </div>
+              <button
+                type="button"
+                className="resume-dialog-close"
+                onClick={() => setIsResumeEnlarged(false)}
+              >
+                Close
+              </button>
+            </div>
+            <div
+              className="resume-dialog-content"
+              onWheel={(event) => {
+                if (event.ctrlKey || event.metaKey) {
+                  event.preventDefault();
+                  changeResumeZoom(event.deltaY < 0 ? 0.1 : -0.1);
+                }
+              }}
+            >
+              <Image
+                src="/resume-page-1.png"
+                alt="Hailey Heckmann 2026 Resume"
+                width={1224}
+                height={1584}
+                className="resume-dialog-image"
+                style={{ height: `${resumeZoom * 100}%` }}
+                unoptimized
+              />
+            </div>
+          </dialog>
         </section>
 
         <section id="contact" className="section">
