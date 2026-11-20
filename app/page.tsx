@@ -68,6 +68,11 @@ export default function Home() {
     setResumeZoom((zoom) => Math.min(3, Math.max(1, zoom + amount)));
   };
 
+  const closeResumeDialog = () => {
+    resumeDialogRef.current?.close();
+    setIsResumeEnlarged(false);
+  };
+
   return (
     <>
       <header className="navbar">
@@ -202,7 +207,7 @@ export default function Home() {
             onCancel={() => setIsResumeEnlarged(false)}
             onClick={(event) => {
               if (event.target === event.currentTarget) {
-                setIsResumeEnlarged(false);
+                closeResumeDialog();
               }
             }}
           >
@@ -238,7 +243,7 @@ export default function Home() {
               <button
                 type="button"
                 className="resume-dialog-close"
-                onClick={() => setIsResumeEnlarged(false)}
+                onClick={closeResumeDialog}
               >
                 Close
               </button>
