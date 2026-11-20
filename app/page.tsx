@@ -187,14 +187,6 @@ export default function Home() {
             <div className="resume-actions">
               <a
                 href="/Hailey-Heckmann-2026-Resume.pdf"
-                className="btn btn-primary"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View Resume
-              </a>
-              <a
-                href="/Hailey-Heckmann-2026-Resume.pdf"
                 className="btn btn-secondary"
                 download="Hailey-Heckmann-2026-Resume.pdf"
               >
