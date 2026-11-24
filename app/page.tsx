@@ -36,11 +36,11 @@ const projects = [
   {
     category: "systems",
     label: "Systems",
-    title: "Hardware Diagnostic Tool",
+    title: "Azure MCP Server for Coca-Cola Bottlers",
     description:
-      "Low-level diagnostics suite designed to benchmark hardware memory bandwidth and monitor telemetry in real time.",
-    technologies: ["C++", "Linux", "Python"],
-    links: [{ label: "GitHub", href: "https://github.com" }],
+      "Deployed Model Context Protocol (MCP) server for Coca-Cola bottlers on Azure with 80+ tools enabling Capgemini produced natural-language models to execute the 80+ critical system tests every morning. Ensured strict security standards and access verification.",
+    technologies: ["Azure", "MCP", "AI", "Automated Testing"],
+    links: [],
   },
   {
     category: "systems",
