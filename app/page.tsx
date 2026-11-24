@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
@@ -14,6 +15,7 @@ const projects = [
     label: "Systems",
     title: "MPPT Solar Charging Circuit",
     image: "/mppt-circuit.png",
+    imageAlt: "MPPT solar charging circuit schematic",
     description: [
       "This circuit is a Maximum Point Power Tracking circuit. The main function of this circuit is to charge the 4 Samsung 35e 18650 batteries that are in a 2S-2P configuration(2 in series, 2 in parallel) with the 4 XTE-SF solar cells, which are all in series, without blowing them up. However, the reason for using an MPPT circuit over the alternatives is that it is much more efficient than other options.",
       "The fundamental reason why this is true is that the MPPT circuit tracks the output of the solar panels, compares it to the battery voltage and decides what the best output is for charging the battery. It then converts the DC charge from the original solar panel output to AC and then back to DC to get the voltage necessary for the battery. By continuously finding the best result for the battery, this circuit eliminates a lot of wasted energy.",
@@ -44,13 +46,15 @@ const projects = [
     category: "systems",
     label: "Systems",
     title: "Biometric Measuring Device",
+    image: "/biometric-measuring-device.jpg",
+    imageAlt: "Handcuffs arranged on a table beside an open equipment case",
     description:
-      "Managed 7 employees to develop a biometric measuring device, designing modular mechanical housing for 9 industry-standard devices under government and legally filed patent level requirements specifications. Integrating onboard processing and Bluetooth connection with custom application.",
-    technologies: ["Biometrics", "Bluetooth", "Custom Application"],
+      "Managed 7 employees to develop the V2 of a biometric measurement device for a client. Integrated onboard processing, and bluetooth conection with custom application made in Flutter. Designing modular mechanical housing for 9 industry-standard devices under government and legally filed patent level requirements specifications. Required custom PCB design and materials sourcing.",
+    technologies: ["Management", "PCB", "Flutter", "Prototyping"],
     links: [
       {
-        label: "Prevail Tactical",
-        href: "https://www.prevailtactical.com/pages/oath#ocx-design-template--28304161866044__main",
+        label: "See Client Results",
+        href: "https://www.prevailtactical.com/pages/oath",
       },
     ],
   },
@@ -67,6 +71,67 @@ const projects = [
 
 type Theme = "dark" | "light";
 
+type NameIntro = {
+  heroOriginX: number;
+  heroOriginY: number;
+  heroOffsetX: number;
+  heroOffsetY: number;
+  offsetX: number;
+  offsetY: number;
+  scale: number;
+  fontSize: string;
+  lineHeight: string;
+  fontFamily: string;
+  fontWeight: string;
+  letterSpacing: string;
+  fontWidthScales: number[];
+  fontAlignOffsets: number[];
+  fontVariants: IntroFontVariant[];
+};
+
+type IntroFontVariant = "normal" | "italic-title" | "uppercase";
+
+const introFontFamilies = [
+  "Syne",
+  "Instrument Serif",
+  "Unbounded",
+  "Bodoni Moda",
+  "Space Grotesk",
+  "Cormorant Garamond",
+  "Bricolage Grotesque",
+  "JetBrains Mono",
+  "Cinzel",
+  "Archivo Black",
+  "Fraunces",
+  "Major Mono Display",
+  "Oswald",
+  "DM Serif Display",
+  "Plus Jakarta Sans",
+  "Playfair Display",
+];
+
+type NameIntroStyle = CSSProperties & {
+  "--hero-x": string;
+  "--hero-y": string;
+  "--intro-site-font": string;
+  "--intro-font-width-scale": number;
+  "--intro-x": string;
+  "--intro-y": string;
+  "--intro-scale": number;
+  [property: `--intro-width-${number}`]: number;
+  [property: `--intro-font-style-${number}`]: "normal" | "italic";
+  [property: `--intro-text-transform-${number}`]: "none" | "uppercase";
+};
+
+type HeroLayoutStyle = CSSProperties & {
+  "--hero-origin-x": string;
+  "--hero-origin-y": string;
+  "--hero-x": string;
+  "--hero-y": string;
+  "--intro-scale": number;
+  [property: `--hero-align-${number}`]: string;
+};
+
 export default function Home() {
   const [activeProjectIndex, setActiveProjectIndex] = useState(0);
   const [carouselPosition, setCarouselPosition] = useState(1);
@@ -78,10 +143,13 @@ export default function Home() {
     null,
   );
   const [theme, setTheme] = useState<Theme>("dark");
+  const [nameIntro, setNameIntro] = useState<NameIntro | null>(null);
+  const [isIntroPending, setIsIntroPending] = useState(true);
   const [isResumeEnlarged, setIsResumeEnlarged] = useState(false);
   const [resumeZoom, setResumeZoom] = useState(1);
   const resumeDialogRef = useRef<HTMLDialogElement>(null);
   const projectDialogRef = useRef<HTMLDialogElement>(null);
+  const nameTitleRef = useRef<HTMLHeadingElement>(null);
   const dragStartRef = useRef<{
     pointerId: number;
     startX: number;
@@ -96,6 +164,152 @@ export default function Home() {
   }, [theme]);
 
   useEffect(() => {
+    const motionPreference = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+    const title = nameTitleRef.current;
+
+    if (motionPreference.matches || !title) {
+      setIsIntroPending(false);
+      return;
+    }
+
+    let cancelled = false;
+    const initialStyle = window.getComputedStyle(title);
+    const specialFontIndices = new Set([2, 8, 11]);
+    const fontVariants = introFontFamilies.map<IntroFontVariant>((_, index) =>
+      specialFontIndices.has(index)
+        ? Math.random() < 0.5
+          ? "italic-title"
+          : "uppercase"
+        : "normal",
+    );
+    const handleMotionPreferenceChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setNameIntro(null);
+        setIsIntroPending(false);
+      }
+    };
+
+    motionPreference.addEventListener("change", handleMotionPreferenceChange);
+    void Promise.all(
+      introFontFamilies.map((family, index) => {
+        const variant = fontVariants[index];
+        const fontStyle = variant === "italic-title" ? "italic" : "normal";
+        const fontText =
+          variant === "uppercase"
+            ? title.textContent?.toUpperCase() ?? ""
+            : title.textContent ?? "";
+        return document.fonts.load(
+          `${fontStyle} ${initialStyle.fontWeight} ${initialStyle.fontSize} "${family}"`,
+          fontText,
+        );
+      }),
+    ).then(() => {
+      if (cancelled) {
+        return;
+      }
+      if (motionPreference.matches || !title.isConnected) {
+        setIsIntroPending(false);
+        return;
+      }
+
+      const bounds = title.getBoundingClientRect();
+      const hero = title.closest(".hero");
+      if (!hero) {
+        setIsIntroPending(false);
+        return;
+      }
+      const heroBounds = hero.getBoundingClientRect();
+      const titleTextRange = document.createRange();
+      titleTextRange.selectNodeContents(title);
+      const titleTextBounds = titleTextRange.getBoundingClientRect();
+      const titleStyle = window.getComputedStyle(title);
+      const lineHeight =
+        Number.parseFloat(titleStyle.lineHeight) || bounds.height;
+      const measureTextWidth = (
+        fontFamily: string,
+        variant: IntroFontVariant,
+      ) => {
+        const measurement = document.createElement("span");
+        measurement.textContent =
+          variant === "uppercase"
+            ? title.textContent?.toUpperCase() ?? ""
+            : title.textContent ?? "";
+        Object.assign(measurement.style, {
+          position: "fixed",
+          top: "-10000px",
+          left: "0",
+          display: "block",
+          width: "max-content",
+          margin: "0",
+          padding: "0",
+          whiteSpace: "nowrap",
+          fontFamily,
+          fontSize: titleStyle.fontSize,
+          fontWeight: titleStyle.fontWeight,
+          lineHeight: titleStyle.lineHeight,
+          letterSpacing: titleStyle.letterSpacing,
+          fontStyle: variant === "italic-title" ? "italic" : "normal",
+        });
+        document.body.append(measurement);
+        const range = document.createRange();
+        range.selectNodeContents(measurement);
+        const width = range.getBoundingClientRect().width;
+        measurement.remove();
+        return width;
+      };
+      const fontWidths = introFontFamilies.map((family, index) =>
+        measureTextWidth(`"${family}"`, fontVariants[index]),
+      );
+      const fontWidthScales = fontWidths.map(
+        (width) => titleTextBounds.width / Math.max(width, 1),
+      );
+      const fontAlignOffsets = fontWidths.map((width, index) =>
+        (titleTextBounds.width - width * fontWidthScales[index]) / 2,
+      );
+
+      const scale = Math.min(
+        (document.documentElement.clientWidth * 0.9) / titleTextBounds.width,
+        (document.documentElement.clientHeight * 0.7) / lineHeight,
+      );
+      const viewportCenterX = document.documentElement.clientWidth / 2;
+      const viewportCenterY = document.documentElement.clientHeight / 2;
+      const titleCenterX = titleTextBounds.left + titleTextBounds.width / 2;
+      const titleCenterY = titleTextBounds.top + titleTextBounds.height / 2;
+      setNameIntro({
+        heroOriginX: titleCenterX - heroBounds.left,
+        heroOriginY: titleCenterY - heroBounds.top,
+        heroOffsetX: viewportCenterX - titleCenterX,
+        heroOffsetY: viewportCenterY - titleCenterY,
+        offsetX: titleCenterX - viewportCenterX,
+        offsetY: titleCenterY - viewportCenterY,
+        scale,
+        fontSize: titleStyle.fontSize,
+        lineHeight: titleStyle.lineHeight,
+        fontFamily: titleStyle.fontFamily,
+        fontWeight: titleStyle.fontWeight,
+        letterSpacing: titleStyle.letterSpacing,
+        fontWidthScales,
+        fontAlignOffsets,
+        fontVariants,
+      });
+      setIsIntroPending(false);
+    }).catch((error: unknown) => {
+      console.error("Unable to load intro fonts", error);
+      setIsIntroPending(false);
+    });
+
+    return () => {
+      cancelled = true;
+      motionPreference.removeEventListener(
+        "change",
+        handleMotionPreferenceChange,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
     const dialog = resumeDialogRef.current;
     if (isResumeEnlarged && dialog && !dialog.open) {
       dialog.showModal();
@@ -106,6 +320,69 @@ export default function Home() {
 
   const selectedProject =
     selectedProjectIndex === null ? null : projects[selectedProjectIndex];
+  const fontWidthStyle: Record<`--intro-width-${number}`, number> | undefined =
+    nameIntro?.fontWidthScales.reduce<
+      Record<`--intro-width-${number}`, number>
+    >((styles, widthScale, index) => {
+      styles[`--intro-width-${index}`] = widthScale;
+      return styles;
+    }, {});
+  const fontVariantStyle:
+    | Pick<
+        NameIntroStyle,
+        | `--intro-font-style-${number}`
+        | `--intro-text-transform-${number}`
+      >
+    | undefined = nameIntro?.fontVariants.reduce<
+    Pick<
+      NameIntroStyle,
+      | `--intro-font-style-${number}`
+      | `--intro-text-transform-${number}`
+    >
+  >((styles, variant, index) => {
+    if (variant !== "normal") {
+      styles[`--intro-font-style-${index}`] =
+        variant === "italic-title" ? "italic" : "normal";
+      styles[`--intro-text-transform-${index}`] =
+        variant === "uppercase" ? "uppercase" : "none";
+    }
+    return styles;
+  }, {});
+  const fontAlignStyle: Record<`--hero-align-${number}`, string> | undefined =
+    nameIntro?.fontAlignOffsets.reduce<
+      Record<`--hero-align-${number}`, string>
+    >((styles, offset, index) => {
+      styles[`--hero-align-${index}`] = `${offset}px`;
+      return styles;
+    }, {});
+  const nameIntroStyle: NameIntroStyle | undefined = nameIntro
+    ? {
+        ...fontWidthStyle,
+        ...fontVariantStyle,
+        "--hero-x": `${nameIntro.heroOffsetX}px`,
+        "--hero-y": `${nameIntro.heroOffsetY}px`,
+        "--intro-site-font": nameIntro.fontFamily,
+        "--intro-font-width-scale": 1,
+        "--intro-x": `${nameIntro.offsetX}px`,
+        "--intro-y": `${nameIntro.offsetY}px`,
+        "--intro-scale": nameIntro.scale,
+        fontSize: nameIntro.fontSize,
+        lineHeight: nameIntro.lineHeight,
+        fontFamily: nameIntro.fontFamily,
+        fontWeight: nameIntro.fontWeight,
+        letterSpacing: nameIntro.letterSpacing,
+      }
+    : undefined;
+  const heroLayoutStyle: HeroLayoutStyle | undefined = nameIntro
+    ? {
+        ...fontAlignStyle,
+        "--hero-origin-x": `${nameIntro.heroOriginX}px`,
+        "--hero-origin-y": `${nameIntro.heroOriginY}px`,
+        "--hero-x": `${nameIntro.heroOffsetX}px`,
+        "--hero-y": `${nameIntro.heroOffsetY}px`,
+        "--intro-scale": nameIntro.scale,
+      }
+    : undefined;
 
   const changeResumeZoom = (amount: number) => {
     setResumeZoom((zoom) => Math.min(3, Math.max(1, zoom + amount)));
@@ -241,8 +518,11 @@ export default function Home() {
   };
 
   return (
-    <>
-      <header className="navbar">
+    <div
+      className={`page-shell${nameIntro ? " intro-active" : isIntroPending ? " intro-pending" : ""}`}
+      inert={nameIntro !== null}
+    >
+      <header className="navbar page-reveal page-reveal-bottom page-reveal-delayed">
         <nav className="nav-links" aria-label="Main navigation">
           <a href="#about">About</a>
           <a href="#projects">Projects</a>
@@ -252,28 +532,56 @@ export default function Home() {
       </header>
 
       <main>
-        <section id="about" className="hero section">
+        <section
+          id="about"
+          className={`hero section${nameIntro ? " hero-layout-reveal" : ""}`}
+          style={heroLayoutStyle}
+        >
           <div className="hero-content">
             <p className="tagline">Hello, I&apos;m</p>
-            <h1 className="hero-title">Hailey</h1>
+            <h1
+              ref={nameTitleRef}
+              className={`hero-title${nameIntro ? " hero-title-hidden" : ""}`}
+            >
+              Hailey
+            </h1>
             <h2 className="hero-subtitle">Systems &amp; Software Engineer</h2>
             <p className="hero-desc">
-              Building high-performance software, low-level firmware, and
-              intuitive digital tools. Focused on clean architecture and
+              Building high-performance software, low-level firmware, AI
+              workflows and FPGA design. Focused on clean architecture and
               efficient systems.
             </p>
-            <div className="hero-cta">
-              <a href="#projects" className="btn btn-primary">
-                View Projects
-              </a>
-              <a href="#contact" className="btn btn-secondary">
-                Get in Touch
-              </a>
+            <div className="hero-interests">
+              <h3 className="interests-title">Interests</h3>
+              <ul className="tag-list">
+                {[
+                  "Volunteer work",
+                  "Running",
+                  "Ballet",
+                  "Tennis",
+                  "Skiing",
+                  "Boating",
+                  "Travel",
+                  "Fashion",
+                  "Baking",
+                  "Animals",
+                  "Airplanes",
+                ].map((interest) => (
+                  <li key={interest}>{interest}</li>
+                ))}
+              </ul>
             </div>
           </div>
+          <Image
+            src="/hailey-image.jpg"
+            alt="Hailey at the beach"
+            width={2160}
+            height={3240}
+            className="hero-image"
+          />
         </section>
 
-        <section id="projects" className="section">
+        <section id="projects" className="section page-reveal page-reveal-bottom page-reveal-delayed">
           <div className="section-header">
             <h2 className="section-title">Projects</h2>
           </div>
@@ -334,7 +642,7 @@ export default function Home() {
                         <Image
                           className="project-image"
                           src={project.image}
-                          alt={`${project.title} schematic`}
+                          alt={project.imageAlt}
                           width={1530}
                           height={1213}
                         />
@@ -455,7 +763,7 @@ export default function Home() {
                   <Image
                     className="project-dialog-image"
                     src={selectedProject.image}
-                    alt={`${selectedProject.title} schematic`}
+                    alt={selectedProject.imageAlt}
                     width={1530}
                     height={1213}
                   />
@@ -485,7 +793,7 @@ export default function Home() {
           </dialog>
         </section>
 
-        <section id="resume" className="section">
+        <section id="resume" className="section page-reveal page-reveal-right">
           <div className="section-header">
             <h2 className="section-title">Resume</h2>
           </div>
@@ -590,7 +898,7 @@ export default function Home() {
           </dialog>
         </section>
 
-        <section id="contact" className="section">
+        <section id="contact" className="section page-reveal page-reveal-left">
           <div className="section-header">
             <h2 className="section-title">Contact</h2>
           </div>
@@ -606,11 +914,24 @@ export default function Home() {
         </section>
       </main>
 
-      <footer>
+      {nameIntro && (
+        <div
+          className="hero-title-intro"
+          aria-hidden="true"
+          onAnimationEnd={() => setNameIntro(null)}
+          style={nameIntroStyle}
+        >
+          <span className="hero-title-intro-text">
+            <span className="hero-title-intro-glyphs">Hailey</span>
+          </span>
+        </div>
+      )}
+
+      <footer className="page-reveal page-reveal-bottom">
         <p>&copy; 2026 Hailey. Built with Next.js.</p>
       </footer>
 
-      <div className="theme-toggle-container">
+      <div className="theme-toggle-container page-reveal page-reveal-corner page-reveal-delayed">
         <button
           type="button"
           className="theme-toggle-button"
@@ -631,6 +952,6 @@ export default function Home() {
           />
         </button>
       </div>
-    </>
+    </div>
   );
 }
