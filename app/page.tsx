@@ -41,15 +41,17 @@ const projects = [
     links: [{ label: "GitHub", href: "https://github.com" }],
   },
   {
-    category: "web",
-    label: "Web",
-    title: "Telemetry Dashboard",
+    category: "systems",
+    label: "Systems",
+    title: "Biometric Measuring Device",
     description:
-      "Full-stack dashboard visualizing real-time hardware status metrics with zero latency and responsive charting.",
-    technologies: ["JavaScript", "WebSockets", "CSS Grid"],
+      "Managed 7 employees to develop a biometric measuring device, designing modular mechanical housing for 9 industry-standard devices under government and legally filed patent level requirements specifications. Integrating onboard processing and Bluetooth connection with custom application.",
+    technologies: ["Biometrics", "Bluetooth", "Custom Application"],
     links: [
-      { label: "GitHub", href: "https://github.com" },
-      { label: "Live Demo", href: "https://github.com" },
+      {
+        label: "Prevail Tactical",
+        href: "https://www.prevailtactical.com/pages/oath#ocx-design-template--28304161866044__main",
+      },
     ],
   },
   {
