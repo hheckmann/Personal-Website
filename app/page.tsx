@@ -269,6 +269,10 @@ export default function Home() {
     }
   };
 
+  const finishNameIntro = () => {
+    setNameIntro(null);
+  };
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem("theme", theme);
@@ -279,8 +283,27 @@ export default function Home() {
       "(prefers-reduced-motion: reduce)",
     );
     const title = nameTitleRef.current;
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    const restoreScrollRestoration = () => {
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
+
+    if (window.location.hash) {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
+    }
+    const previousScrollBehavior =
+      document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo(0, 0);
+    document.documentElement.style.scrollBehavior = previousScrollBehavior;
 
     if (motionPreference.matches || !title) {
+      restoreScrollRestoration();
       setIsIntroPending(false);
       return;
     }
@@ -297,6 +320,7 @@ export default function Home() {
     );
     const handleMotionPreferenceChange = (event: MediaQueryListEvent) => {
       if (event.matches) {
+        restoreScrollRestoration();
         setNameIntro(null);
         setIsIntroPending(false);
       }
@@ -316,10 +340,24 @@ export default function Home() {
           fontText,
         );
       }),
-    ).then(() => {
+    ).then(async () => {
       if (cancelled) {
         return;
       }
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => resolve());
+        });
+      });
+      if (cancelled) {
+        return;
+      }
+      const previousScrollBehavior =
+        document.documentElement.style.scrollBehavior;
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo(0, 0);
+      document.documentElement.style.scrollBehavior = previousScrollBehavior;
+      restoreScrollRestoration();
       if (motionPreference.matches || !title.isConnected) {
         setIsIntroPending(false);
         return;
@@ -408,11 +446,13 @@ export default function Home() {
       setIsIntroPending(false);
     }).catch((error: unknown) => {
       console.error("Unable to load intro fonts", error);
+      restoreScrollRestoration();
       setIsIntroPending(false);
     });
 
     return () => {
       cancelled = true;
+      restoreScrollRestoration();
       motionPreference.removeEventListener(
         "change",
         handleMotionPreferenceChange,
@@ -1064,7 +1104,7 @@ export default function Home() {
               alt="Hailey in London"
               width={2160}
               height={2880}
-              className="hero-image contact-image"
+              className="contact-image"
             />
             <div className="contact-info">
               <ul className="contact-details">
@@ -1188,7 +1228,7 @@ export default function Home() {
         <div
           className="hero-title-intro"
           aria-hidden="true"
-          onAnimationEnd={() => setNameIntro(null)}
+          onAnimationEnd={finishNameIntro}
           style={nameIntroStyle}
         >
           <span className="hero-title-intro-text">
