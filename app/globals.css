@@ -343,13 +343,29 @@ main {
 }
 
 .hero-image {
+  position: relative;
   display: block;
   width: 100%;
   max-width: 300px;
-  height: auto;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
   justify-self: end;
   border-radius: 18px;
   box-shadow: 0 16px 40px rgb(0 0 0 / 28%);
+}
+
+.hero-image-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+
+.hero-image-layer.active {
+  opacity: 1;
 }
 
 .tagline {
@@ -592,7 +608,7 @@ main {
   display: inline-block;
   padding: 0.65rem 1.3rem;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 0.95rem;
   font-weight: 500;
   text-decoration: none;
@@ -820,12 +836,43 @@ main {
 }
 
 .tag-list li {
+  scale: 1;
   padding: 0.2rem 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 999px;
   background: var(--bg-card);
   color: var(--text-muted);
   font-size: 0.75rem;
+  transition: scale 160ms ease;
+}
+
+.tag-list li:hover {
+  scale: 1.06;
+}
+
+.tag-list li.tag-recoiling {
+  animation: tag-recoil 320ms ease-out both;
+}
+
+@keyframes tag-recoil {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  35% {
+    transform: translate(var(--tag-recoil-x), var(--tag-recoil-y));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tag-list li.tag-recoiling {
+    animation: none;
+  }
+
+  .tag-list li {
+    transition: none;
+  }
 }
 
 .card-links {
@@ -984,7 +1031,7 @@ main {
 .resume-dialog-close {
   padding: 0.4rem 0.8rem;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 999px;
   background: var(--bg-secondary);
   color: var(--text-main);
   cursor: pointer;
@@ -1029,17 +1076,142 @@ main {
 }
 
 .contact-box {
-  max-width: 600px;
+  display: flex;
+  max-width: 900px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2rem;
   padding: 2.5rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   background-color: var(--bg-card);
-  text-align: center;
 }
 
-.contact-box p {
-  margin-bottom: 1.5rem;
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
   color: var(--text-muted);
+  list-style: none;
+}
+
+.contact-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.contact-detail-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2rem 2rem;
+  min-width: 0;
+  align-items: center;
+  width: 100%;
+}
+
+.contact-value {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.25rem 0;
+}
+
+.contact-label {
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.contact-details strong {
+  color: var(--text-main);
+  font-size: 1rem;
+}
+
+.contact-value-link {
+  color: inherit;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.contact-value-link:hover {
+  color: var(--accent);
+}
+
+.contact-image {
+  flex: 0 0 300px;
+}
+
+.contact-copy-button,
+.contact-open-link {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.contact-copy-button {
+  grid-column: 3;
+  cursor: pointer;
+}
+
+.contact-open-link {
+  grid-column: 2;
+}
+
+.contact-copy-button:hover,
+.contact-open-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.contact-copy-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.contact-copy-button svg,
+.contact-open-link svg {
+  width: 100%;
+  height: 100%;
+}
+
+.contact-copy-feedback {
+  position: absolute;
+  top: 50%;
+  right: -4rem;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+.contact-copy-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.contact-copy-error {
+  margin-top: 0.75rem;
+  color: var(--accent);
+  font-size: 0.9rem;
 }
 
 footer {
@@ -1165,6 +1337,13 @@ footer {
   }
 
   .contact-box {
+    align-items: flex-start;
+    flex-direction: column;
     padding: 1.5rem;
+  }
+
+  .contact-value {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: 0.5rem;
   }
 }

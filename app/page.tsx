@@ -9,7 +9,18 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
-const projects = [
+type Project = {
+  category: string;
+  label: string;
+  title: string;
+  image?: string;
+  imageAlt?: string;
+  description: string;
+  technologies: string[];
+  links: { label: string; href: string; download?: boolean }[];
+};
+
+const projects: Project[] = [
   {
     category: "systems",
     label: "Systems",
@@ -37,6 +48,8 @@ const projects = [
     category: "systems",
     label: "Systems",
     title: "Azure MCP Server for Coca-Cola Bottlers",
+    image: "/CONA.jpg",
+    imageAlt: "Coca-Cola bottler Azure MCP project",
     description:
       "Deployed Model Context Protocol (MCP) server for Coca-Cola bottlers on Azure with 80+ tools enabling Capgemini produced natural-language models to execute the 80+ critical system tests every morning. Ensured strict security standards and access verification.",
     technologies: ["Azure", "MCP", "AI", "Automated Testing"],
@@ -61,13 +74,35 @@ const projects = [
   {
     category: "systems",
     label: "Systems",
-    title: "Embedded Sensor Hub",
+    title: "Enterprise Agentic AI Framework Research",
+    image: "/capgemini-image.jpg",
+    imageAlt: "Capgemini agentic AI framework research",
     description:
-      "Firmware architecture for multi-channel I2C and SPI sensor acquisition with automated calibration routines.",
-    technologies: ["Embedded C", "RTOS", "Altium"],
-    links: [{ label: "GitHub", href: "https://github.com" }],
+      "Researched Capgemini’s internally produced agentic AI Framework vs. open-source AI Frameworks to identify key recommendations and market gaps for Enterprise Architect team to incorporate for future updates. Presented findings to 100 industry professionals and provided documentation on results.",
+    technologies: ["Agentic AI", "Framework Research", "Enterprise Architecture"],
+    links: [],
   },
-] as const;
+  {
+    category: "systems",
+    label: "Systems",
+    title: "2U CubeSat Solar Power System",
+    image: "/bad-solder.jpg",
+    imageAlt: "Damaged circuit board salvaged through soldering and desoldering",
+    description:
+      "Tested and assembled a solar power system on a 2U CubeSat, saving $13,000+ by expertly soldering and desoldering damaged PCBs (shown to the left) to salvage custom hardware. Analyzed component performance data to maximize satellite power efficiency within given mission constraints.",
+    technologies: ["CubeSat", "Solar Power", "PCB Rework", "Power Efficiency"],
+    links: [],
+  },
+  {
+    category: "systems",
+    label: "Web Development",
+    title: "CREATE Labs Website",
+    description:
+      "Designed CREATE Labs website using Ghost templates. Hosted on research lab server. Code injection customization on every page in HTML, CSS, and JavaScript. A big challenge was the rigidity of Ghost. Very limited by the template so I had to learn Handlebars language to rework it. Lead the website team during my remaining time with the research lab.",
+    technologies: ["Ghost", "Handlebars", "HTML", "CSS", "JavaScript"],
+    links: [{ label: "View website", href: "https://create.uga.edu/" }],
+  },
+];
 
 type Theme = "dark" | "light";
 
@@ -110,6 +145,65 @@ const introFontFamilies = [
   "Playfair Display",
 ];
 
+const contactItems = [
+  { label: "Name", value: "Hailey Heckmann" },
+  { label: "Phone", value: "(678) 709-5654", href: "tel:+16787095654" },
+  {
+    label: "Email",
+    value: "haileyjheckmann@gmail.com",
+    href: "mailto:haileyjheckmann@gmail.com",
+  },
+  {
+    label: "LinkedIn",
+    value: "hailey-heckmann",
+    href: "https://www.linkedin.com/in/hailey-heckmann/",
+  },
+  {
+    label: "GitHub",
+    value: "hheckmann",
+    href: "https://github.com/hheckmann",
+  },
+  {
+    label: "LeetCode",
+    value: "haileyheckmann",
+    href: "https://leetcode.com/u/haileyheckmann/",
+  },
+] as const;
+
+const recoilTag = (event: ReactPointerEvent<HTMLLIElement>) => {
+  if (event.pointerType === "touch") {
+    return;
+  }
+
+  const bounds = event.currentTarget.getBoundingClientRect();
+  let x = bounds.left + bounds.width / 2 - event.clientX;
+  let y = bounds.top + bounds.height / 2 - event.clientY;
+  const distance = Math.hypot(x, y) || 1;
+
+  if (Math.hypot(x, y) === 0) {
+    x = 0;
+    y = -1;
+  }
+
+  event.currentTarget.style.setProperty(
+    "--tag-recoil-x",
+    `${(x / distance) * 5}px`,
+  );
+  event.currentTarget.style.setProperty(
+    "--tag-recoil-y",
+    `${(y / distance) * 5}px`,
+  );
+  event.currentTarget.classList.remove("tag-recoiling");
+  void event.currentTarget.offsetWidth;
+  event.currentTarget.classList.add("tag-recoiling");
+};
+
+const resetTagRecoil = (element: HTMLLIElement) => {
+  element.classList.remove("tag-recoiling");
+  element.style.removeProperty("--tag-recoil-x");
+  element.style.removeProperty("--tag-recoil-y");
+};
+
 type NameIntroStyle = CSSProperties & {
   "--hero-x": string;
   "--hero-y": string;
@@ -147,6 +241,11 @@ export default function Home() {
   const [isIntroPending, setIsIntroPending] = useState(true);
   const [isResumeEnlarged, setIsResumeEnlarged] = useState(false);
   const [resumeZoom, setResumeZoom] = useState(1);
+  const [isTravelHovered, setIsTravelHovered] = useState(false);
+  const [copiedContactItem, setCopiedContactItem] = useState<string | null>(
+    null,
+  );
+  const [contactCopyError, setContactCopyError] = useState<string | null>(null);
   const resumeDialogRef = useRef<HTMLDialogElement>(null);
   const projectDialogRef = useRef<HTMLDialogElement>(null);
   const nameTitleRef = useRef<HTMLHeadingElement>(null);
@@ -157,6 +256,18 @@ export default function Home() {
   } | null>(null);
   const suppressClickRef = useRef(false);
   const carouselTransitionRef = useRef(false);
+
+  const copyContactItem = async (label: string, value: string) => {
+    setContactCopyError(null);
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedContactItem(label);
+    } catch (error) {
+      console.error(`Unable to copy ${label} to clipboard`, error);
+      setCopiedContactItem(null);
+      setContactCopyError(`Could not copy ${label}. Please copy it manually.`);
+    }
+  };
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -567,18 +678,47 @@ export default function Home() {
                   "Animals",
                   "Airplanes",
                 ].map((interest) => (
-                  <li key={interest}>{interest}</li>
+                  <li
+                    key={interest}
+                    onPointerEnter={(event) => {
+                      recoilTag(event);
+                      if (interest === "Travel" && event.pointerType !== "touch") {
+                        setIsTravelHovered(true);
+                      }
+                    }}
+                    onPointerLeave={() => {
+                      if (interest === "Travel") {
+                        setIsTravelHovered(false);
+                      }
+                    }}
+                    onAnimationEnd={(event) =>
+                      resetTagRecoil(event.currentTarget)
+                    }
+                  >
+                    {interest}
+                  </li>
                 ))}
               </ul>
             </div>
           </div>
-          <Image
-            src="/hailey-image.jpg"
-            alt="Hailey at the beach"
-            width={2160}
-            height={3240}
-            className="hero-image"
-          />
+          <div className="hero-image hero-image-stack">
+            <Image
+              src="/hailey-image.jpg"
+              alt={isTravelHovered ? "" : "Hailey at the beach"}
+              aria-hidden={isTravelHovered}
+              width={2160}
+              height={3240}
+              className={`hero-image-layer${isTravelHovered ? "" : " active"}`}
+            />
+            <Image
+              src="/hailey-travel.jpg"
+              alt={isTravelHovered ? "Hailey traveling in London" : ""}
+              aria-hidden={!isTravelHovered}
+              width={2160}
+              height={2880}
+              className={`hero-image-layer${isTravelHovered ? " active" : ""}`}
+            />
+          </div>
         </section>
 
         <section id="projects" className="section page-reveal page-reveal-bottom page-reveal-delayed">
@@ -638,7 +778,7 @@ export default function Home() {
                       aria-label={`View ${project.title} larger`}
                       onClick={() => openProject(index)}
                     >
-                      {"image" in project ? (
+                      {project.image && project.imageAlt ? (
                         <Image
                           className="project-image"
                           src={project.image}
@@ -664,7 +804,15 @@ export default function Home() {
                       <p className="project-description">{project.description}</p>
                       <ul className="tag-list">
                         {project.technologies.map((technology) => (
-                          <li key={technology}>{technology}</li>
+                          <li
+                            key={technology}
+                            onPointerEnter={recoilTag}
+                            onAnimationEnd={(event) =>
+                              resetTagRecoil(event.currentTarget)
+                            }
+                          >
+                            {technology}
+                          </li>
                         ))}
                       </ul>
                       <div className="card-links">
@@ -759,7 +907,7 @@ export default function Home() {
                 </div>
                 <div className="project-dialog-content">
                 <h3>{selectedProject.title}</h3>
-                {"image" in selectedProject && (
+                {selectedProject.image && selectedProject.imageAlt && (
                   <Image
                     className="project-dialog-image"
                     src={selectedProject.image}
@@ -771,7 +919,15 @@ export default function Home() {
                 <p>{selectedProject.description}</p>
                 <ul className="tag-list">
                   {selectedProject.technologies.map((technology) => (
-                    <li key={technology}>{technology}</li>
+                    <li
+                      key={technology}
+                      onPointerEnter={recoilTag}
+                      onAnimationEnd={(event) =>
+                        resetTagRecoil(event.currentTarget)
+                      }
+                    >
+                      {technology}
+                    </li>
                   ))}
                 </ul>
                 <div className="card-links">
@@ -903,13 +1059,127 @@ export default function Home() {
             <h2 className="section-title">Contact</h2>
           </div>
           <div className="contact-box">
-            <p>
-              I&apos;m always open to discussing new engineering opportunities,
-              projects, or collaborations.
-            </p>
-            <a href="mailto:your.email@example.com" className="btn btn-primary">
-              Send Email
-            </a>
+            <Image
+              src="/hailey-pose.jpg"
+              alt="Hailey in London"
+              width={2160}
+              height={2880}
+              className="hero-image contact-image"
+            />
+            <div className="contact-info">
+              <ul className="contact-details">
+                {contactItems.map((item) => (
+                  <li className="contact-detail-item" key={item.label}>
+                    <div className="contact-value">
+                      <span className="contact-label">{item.label}</span>
+                      {"href" in item ? (
+                        <a
+                          className="contact-value-link"
+                          href={item.href}
+                          target={
+                            item.href.startsWith("https://")
+                              ? "_blank"
+                              : undefined
+                          }
+                          rel={
+                            item.href.startsWith("https://")
+                              ? "noreferrer"
+                              : undefined
+                          }
+                        >
+                          {item.value}
+                        </a>
+                      ) : (
+                        <strong>{item.value}</strong>
+                      )}
+                    </div>
+                    {"href" in item && (
+                      <a
+                        className="contact-open-link"
+                        href={item.href}
+                        target={
+                          item.href.startsWith("https://")
+                            ? "_blank"
+                            : undefined
+                        }
+                        rel={
+                          item.href.startsWith("https://")
+                            ? "noreferrer"
+                            : undefined
+                        }
+                        aria-label={
+                          item.label === "Phone"
+                            ? "Call phone number"
+                            : item.label === "Email"
+                              ? "Compose email"
+                              : `Open ${item.label} in a new tab`
+                        }
+                        title={
+                          item.label === "Phone"
+                            ? "Call phone number"
+                            : item.label === "Email"
+                              ? "Compose email"
+                              : `Open ${item.label} in a new tab`
+                        }
+                      >
+                        <svg
+                          aria-hidden="true"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M14 4h6v6" />
+                          <path d="M20 4 11 13" />
+                          <path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
+                        </svg>
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      className="contact-copy-button"
+                      aria-label={`Copy ${item.label}`}
+                      title={
+                        copiedContactItem === item.label
+                          ? `${item.label} copied`
+                          : `Copy ${item.label}`
+                      }
+                      onClick={() =>
+                        void copyContactItem(item.label, item.value)
+                      }
+                    >
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="8" y="8" width="12" height="12" rx="2" />
+                        <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+                      </svg>
+                    </button>
+                    {copiedContactItem === item.label && (
+                      <span className="contact-copy-feedback">Copied</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="contact-copy-status" aria-live="polite">
+                {copiedContactItem
+                  ? `${copiedContactItem} copied to clipboard.`
+                  : ""}
+              </p>
+              {contactCopyError && (
+                <p className="contact-copy-error" role="alert">
+                  {contactCopyError}
+                </p>
+              )}
+            </div>
           </div>
         </section>
       </main>
